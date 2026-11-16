@@ -1,7 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Navigate, NavLink, Outlet, Route, Routes, useNavigate } from "react-router-dom";
-import { api, Me } from "./api";
+import { BrowserRouter, HashRouter, Navigate, NavLink, Outlet, Route, Routes, useNavigate } from "react-router-dom";
+import { api, Me, STATIC } from "./api";
+
+const Router = STATIC ? HashRouter : BrowserRouter;
 import "./styles.css";
 import { AuthPage } from "./pages/Auth";
 import { Home } from "./pages/Home";
@@ -26,11 +28,11 @@ function Shell() {
         <NavLink to="/progress" className="navlink"><span>📊</span><b>Progress</b></NavLink>
         {me.role === "admin" && <NavLink to="/admin" className="navlink"><span>⚙️</span><b>Admin</b></NavLink>}
         <div className="side-spacer" />
-        <button className="navlink as-btn" onClick={logout}><span>👋</span><b>Sign out</b></button>
+        {!STATIC && <button className="navlink as-btn" onClick={logout}><span>👋</span><b>Sign out</b></button>}
       </nav>
       <div className="main">
         <header className="topbar">
-          <div className="hello">Hi, {me.name.split(" ")[0]}</div>
+          <div className="hello">{STATIC ? "Progress is saved in this browser" : `Hi, ${me.name.split(" ")[0]}`}</div>
           <div className="stats">
             <span className={`stat ${me.streak && me.activeToday ? "on" : ""}`} title="Day streak">🔥 {me.streak}</span>
             <span className="stat xp" title="Total XP">⚡ {me.xp}</span>
@@ -53,7 +55,7 @@ function App() {
   if (!ready) return <div className="center-screen"><div className="spinner" /></div>;
   return (
     <Ctx.Provider value={{ me, refresh }}>
-      <BrowserRouter>
+      <Router>
         <Routes>
           <Route path="/login" element={me ? <Navigate to="/" replace /> : <AuthPage />} />
           <Route path="/practice" element={me ? <Practice /> : <Navigate to="/login" replace />} />
@@ -65,7 +67,7 @@ function App() {
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </BrowserRouter>
+      </Router>
     </Ctx.Provider>
   );
 }

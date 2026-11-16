@@ -8,7 +8,9 @@
     "dev:web": "vite",
     "build": "vite build",
     "start": "tsx server/index.ts",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "build:static": "VITE_STATIC=1 vite build",
+    "export:static": "tsx scripts/export-static.ts"
   },
   "repository": {
     "type": "git",

@@ -148,7 +148,7 @@ student.get("/practice/solution/:id", requireUser, (req, res) => {
   if (!q || q.type !== "structured") return res.status(404).json({ error: "Question not found" });
   res.json({
     parts: q.status === "ok" && q.parts ? JSON.parse(q.parts) : null,
-    msImages: (JSON.parse(q.ms_images) as string[]).map((f) => `/media/${f}`), marks: q.marks,
+    msImages: (JSON.parse(q.ms_images) as string[]).map((f) => `/media/${f}`), marks: q.marks, msVisual: !!q.ms_visual,
   });
 });
 

@@ -67,20 +67,20 @@ export function Progress() {
             {d.recent.map((r: any) => (
               <div className="rrow" key={r.id}>
                 <span>{r.correct ? "✅" : "❌"}</span>
-                <span className="grow">{r.topic || "Question"} <small className="muted">{r.subject_code}/{r.component} {SESSIONS[r.session]} {r.year} Q{r.number}</small></span>
+                <span className="grow">{r.topic || "Question"} <small className="muted">{r.label || `${r.subject_code}/${r.component} ${SESSIONS[r.session]} ${r.year} Q${r.number}`}</small></span>
                 <span className="muted">{r.type === "structured" ? `${r.score}/${r.max_score}` : ""}</span>
               </div>
             ))}
           </section>
         </div>
-        <div>
+        {d.leaderboard.length > 0 && <div>
           <h4 className="section-label">Leaderboard</h4>
           <section className="card pad">
             {d.leaderboard.map((u: any, k: number) => (
               <div className={`rrow ${u.me ? "me" : ""}`} key={k}><span className="rank">{["🥇", "🥈", "🥉"][k] || k + 1}</span><span className="grow">{u.name}</span><b>⚡ {u.xp}</b></div>
             ))}
           </section>
-        </div>
+        </div>}
       </div>
     </>
   );

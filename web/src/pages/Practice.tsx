@@ -5,7 +5,7 @@ import { Rich } from "../Rich";
 import { useMe } from "../main";
 
 interface McqResult { correct: boolean; answer: string; explanation: string | null; gained: number }
-interface Solution { parts: { label: string; prompt: string; marks: number; mark_scheme: string; model_answer: string }[] | null; msImages: string[]; marks: number }
+interface Solution { parts: { label: string; prompt: string; marks: number; mark_scheme: string; model_answer: string }[] | null; msImages: string[]; marks: number; msVisual?: boolean }
 
 export function Practice() {
   const { state } = useLocation() as { state: any };
@@ -156,7 +156,7 @@ function Structured({ q, onNext }: { q: Question; onNext: (right: boolean, xp: n
   const showImages = true; // the printed question keeps shared stems, figures and tables that part prompts alone would lose
   const reveal = async () => {
     setBusy(true); setErr("");
-    try { setSol(await api(`/practice/solution/${q.id}`)); } catch (e: any) { setErr(e.message); } finally { setBusy(false); }
+    try { const r = await api<Solution>(`/practice/solution/${q.id}`); setSol(r); if (r.msVisual) setShowOriginal(true); } catch (e: any) { setErr(e.message); } finally { setBusy(false); }
   };
   const parts = sol?.parts;
   const total = useMemo(() => (parts ? parts.reduce((s, _p, k) => s + (scores[k] ?? 0), 0) : 0), [parts, scores]);
@@ -197,8 +197,8 @@ function Structured({ q, onNext }: { q: Question; onNext: (right: boolean, xp: n
             <textarea placeholder="Type your answer or working here (optional)…" value={answers[0] || ""} disabled={!!sol} onChange={(e) => setAnswers({ 0: e.target.value })} rows={4} />
           </div>
         )}
+        {sol && parts && sol.msImages.length > 0 && <button className="link" onClick={() => setShowOriginal(!showOriginal)}>{showOriginal ? "Hide" : "Show"} original mark scheme{sol.msVisual ? " (includes drawn answers)" : ""}</button>}
         {sol && (!parts || showOriginal) && <div className="ms"><div className="ms-title">Official mark scheme</div><Images srcs={sol.msImages} alt="Official mark scheme" /></div>}
-        {sol && parts && sol.msImages.length > 0 && <button className="link" onClick={() => setShowOriginal(!showOriginal)}>{showOriginal ? "Hide" : "Show"} original mark scheme</button>}
         {sol && !parts && (
           <div className="award big">
             <span>How did you do?</span>
@@ -212,7 +212,7 @@ function Structured({ q, onNext }: { q: Question; onNext: (right: boolean, xp: n
             {err && <span className="form-error">{err}</span>}
             {sol && parts && <h3>Your score: {total} / {q.marks}</h3>}
           </div>
-          {sol ? <button className="btn primary" disabled={!allMarked || busy} onClick={submit}>{allMarked ? "Continue" : "Mark each part"}</button>
+          {sol ? <button className="btn primary" disabled={!allMarked || busy} onClick={submit}>{allMarked ? "Continue" : parts ? "Mark each part" : "Rate yourself"}</button>
             : <button className="btn primary" disabled={busy} onClick={reveal}>Reveal mark scheme</button>}
         </div>
       </footer>

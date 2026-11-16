@@ -67,6 +67,8 @@ CREATE TABLE IF NOT EXISTS ai_usage (
 CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 `);
 
+try { db.exec("ALTER TABLE questions ADD COLUMN ms_visual INTEGER NOT NULL DEFAULT 0"); } catch { /* already there */ }
+
 const DEFAULTS: Record<string, string> = {
   ai_model: "claude-opus-5-5",
   ai_budget_usd: "5",

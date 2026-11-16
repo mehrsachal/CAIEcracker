@@ -38,3 +38,15 @@ Cost controls (Admin → Overview): model, effort, a hard budget cap in USD, and
 - Scanned papers with no text layer (mostly pre-2003) cannot be segmented and are skipped.
 - Papers that rely on inserts or source booklets (e.g. English, some Humanities) are imported without the insert.
 - Past papers are Cambridge copyright; check you have the right to host them before going public.
+
+## GitHub Pages (static site)
+
+Pages can't run the server, so the public site is a static build: the question bank is exported to `web/public/bank/` (JSON + images) and student progress is stored in the browser (no accounts). The admin question engine still runs locally.
+
+```bash
+npm start                 # import / review papers in the admin dashboard
+npm run export:static     # write the published bank to web/public/bank/
+git add web/public/bank && git commit -m "Update question bank" && git push
+```
+
+`.github/workflows/pages.yml` builds with `npm run build:static` and deploys on every push. One-time setup: repo **Settings → Pages → Source: GitHub Actions**.

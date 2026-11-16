@@ -87,6 +87,7 @@ export async function enrichMcq(paperId: number, subject: string, topics: string
   const system = `You convert Cambridge International exam multiple-choice questions into structured data for a revision app. You are given, for each question, its image exactly as printed, the raw PDF text layer (may be garbled; the image is the source of truth) and the official answer from the published mark scheme.
 
 ${FORMAT_RULES}
+- Answers are sometimes pictures or sit on the picture itself (labels A-D on a diagram, four candidate graphs, points marked on a figure). In every such case set needs_image=true.
 - If options are drawings/graphs or rows of a table, set needs_image=true and put a short description in each option field (e.g. the row's values separated by " | "), or "" if not describable.
 - The explanation must justify the official answer with correct subject reasoning a student can follow (working shown for calculations). Keep it under 120 words.
 - topic must be copied exactly from the allowed topic list when one is provided.`;
@@ -103,6 +104,7 @@ ${FORMAT_RULES}
 const StructSchema = z.object({
   question_text: z.string().describe("Full question transcription including all parts, with part labels like (a), (b)(i) at the start of each part"),
   needs_image: z.boolean().describe("true if any diagram, graph, picture, table or answer grid is needed to answer"),
+  mark_scheme_needs_image: z.boolean().describe("true if the official mark scheme contains anything that text cannot carry faithfully: a drawn graph or line, completed diagram, labelled figure, annotated table/grid, or structural formula"),
   topic: z.string(), subtopic: z.string(),
   difficulty: z.number().int().describe("1 easy, 2 medium, 3 hard"),
   parts: z.array(z.object({
@@ -121,6 +123,7 @@ export async function enrichStructured(paperId: number, subject: string, topics:
 ${FORMAT_RULES}
 - Split the question into its smallest answerable parts exactly as labelled on the paper; marks per part come from the [n] shown on the paper.
 - mark_scheme must reflect the official mark scheme only (do not invent marking points). If the mark scheme for a part is missing, write "Not available".
+- If the expected answer is something drawn or marked on a figure (a sketch, a line on a graph, a completed diagram), describe in words what must be drawn in mark_scheme and model_answer, and set mark_scheme_needs_image=true so the original is shown.
 - model_answer: concise worked solution a student could write to earn full marks.
 - topic must be copied exactly from the allowed topic list when one is provided (pick the dominant one).`;
   const content: Content = [txt(`Subject: ${subject}\nAllowed topics:\n${topics.length ? topics.map((t) => `- ${t}`).join("\n") : "(none provided: choose a concise syllabus topic name)"}\n\n=== Question ${q.number} as printed ===`)];

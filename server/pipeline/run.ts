@@ -191,7 +191,7 @@ export async function stageEnrich(p: PaperRow) {
     for (let i = 0; i < pending.length; i += 8) chunks.push(pending.slice(i, i + 8));
     await pool(chunks, 3, (c) => run(c));
   } else {
-    const save = db.prepare(`UPDATE questions SET text=?, parts=?, marks=?, display=?, topic=?, subtopic=?, difficulty=?, explanation=NULL, status='ok', review_note=NULL WHERE id=?`);
+    const save = db.prepare(`UPDATE questions SET text=?, parts=?, marks=?, display=?, topic=?, subtopic=?, difficulty=?, ms_visual=?, explanation=NULL, status='ok', review_note=NULL WHERE id=?`);
     await pool(pending, 3, async (q) => {
       if (aborted) return;
       for (let attempt = 0; attempt < 2; attempt++) {
@@ -199,7 +199,7 @@ export async function stageEnrich(p: PaperRow) {
           const o = await enrichStructured(p.id, subjectLabel, topics, { number: q.number, images: loadImgs(q.images, 6), msImages: loadImgs(q.ms_images, 5), text: q.text || "", msText: q.explanation || "" });
           if (!o.parts.length) throw new Error("no parts returned");
           const marks = o.parts.reduce((s, x) => s + Math.max(0, x.marks), 0) || 1;
-          save.run(o.question_text.trim(), JSON.stringify(o.parts), marks, o.needs_image ? "image" : "text", resolveTopic(p.subject_code, topics, o.topic), o.subtopic.trim(), clampDiff(o.difficulty), q.id);
+          save.run(o.question_text.trim(), JSON.stringify(o.parts), marks, "image", resolveTopic(p.subject_code, topics, o.topic), o.subtopic.trim(), clampDiff(o.difficulty), o.mark_scheme_needs_image ? 1 : 0, q.id);
           return;
         } catch (e: any) {
           if (e instanceof BudgetError || e instanceof AiUnavailableError) { aborted = e.message; return; }

@@ -1,6 +1,9 @@
 export class ApiError extends Error { constructor(msg: string, public status: number) { super(msg); } }
 
+export const STATIC = import.meta.env.VITE_STATIC === "1";
+
 export async function api<T = any>(path: string, opts: { method?: string; body?: unknown; form?: FormData } = {}): Promise<T> {
+  if (STATIC) return (await import("./static")).staticApi(path, opts.body as any) as Promise<T>;
   let res: Response;
   try {
     res = await fetch(`/api${path}`, {
@@ -17,7 +20,7 @@ export async function api<T = any>(path: string, opts: { method?: string; body?:
 
 export interface Me { id: number; email: string; name: string; role: string; xp: number; streak: number; dailyGoal: number; xpToday: number; activeToday: boolean }
 export interface Question {
-  id: number; type: "mcq" | "structured"; display: "text" | "image"; text: string | null;
+  id: number | string; type: "mcq" | "structured"; display: "text" | "image"; text: string | null;
   options: Record<string, string> | null; images: string[]; parts: { label: string; prompt: string; marks: number }[] | null;
   marks: number; topic: string | null; subtopic: string | null; difficulty: number; source: string;
 }
